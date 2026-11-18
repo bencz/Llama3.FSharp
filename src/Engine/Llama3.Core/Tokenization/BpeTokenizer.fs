@@ -37,9 +37,9 @@ module PreTokenizers =
                     $"Pre-tokenizer '%s{other}' is not supported (qwen2, llama3/llama-bpe, gpt-2, smollm/starcoder, default)")
 
 /// Applies a regex cascade with code-point semantics. .NET regexes see UTF-16 code units, so a
-/// supplementary-plane character (emoji, CJK extension B…) would be two surrogates that match
+/// supplementary-plane character (emoji, CJK extension B...) would be two surrogates that match
 /// neither \p{L} nor \p{N}. Each such character is replaced by a one-char representative of the
-/// same category (letter → 'a', number → '0', punctuation → '!', other → U+2603) and piece
+/// same category (letter -> 'a', number -> '0', punctuation -> '!', other -> U+2603) and piece
 /// boundaries are mapped back, giving exactly the code-point behaviour of llama.cpp / tokenizers.
 [<Sealed>]
 type internal CascadeSplitter(patterns: string list) =
@@ -61,7 +61,7 @@ type internal CascadeSplitter(patterns: string list) =
 
     /// Splits <paramref name="text"/> into pre-tokens, appended to <paramref name="output"/>.
     member _.Split(text: string, output: List<string>) =
-        // Shadow string (one char per code point) and code-point → UTF-16 offset map, only when needed.
+        // Shadow string (one char per code point) and code-point -> UTF-16 offset map, only when needed.
         let hasSurrogates = text.AsSpan().IndexOfAnyInRange('\uD800', '\uDFFF') >= 0
         let shadow, offsets =
             if not hasSurrogates then text, Array.empty<int>
@@ -100,7 +100,7 @@ type internal CascadeSplitter(patterns: string list) =
             if offsets.Length = 0 then output.Add(text.Substring(start, length))
             else output.Add(text.Substring(offsets.[start], offsets.[start + length] - offsets.[start]))
 
-/// GPT-2 byte ↔ unicode bijection used by byte-level BPE vocabularies.
+/// GPT-2 byte <-> unicode bijection used by byte-level BPE vocabularies.
 module ByteLevel =
     let byteToChar: char[] =
         let table = Array.zeroCreate<char> 256

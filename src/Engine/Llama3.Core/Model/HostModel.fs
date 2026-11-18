@@ -26,7 +26,7 @@ type HostAttention =
           yield! Option.toList a.QNorm
           yield! Option.toList a.KNorm ]
 
-/// SwiGLU feed-forward: down(silu(gate(x)) ⊙ up(x)).
+/// SwiGLU feed-forward: down(silu(gate(x)) * up(x)).
 type HostDenseFfn =
     { Gate: HostTensor
       Up: HostTensor
@@ -34,7 +34,7 @@ type HostDenseFfn =
 
 /// Sparse mixture of experts. Expert tensors are 3-D in ggml order
 /// <c>[cols, rows, experts]</c>, i.e. a stack of per-expert matrices whose rows are contiguous:
-/// expert <c>e</c> owns rows <c>[e·rows, (e+1)·rows)</c> of the tensor viewed as 2-D.
+/// expert <c>e</c> owns rows <c>[e*rows, (e+1)*rows)</c> of the tensor viewed as 2-D.
 type HostMoe =
     { /// Router (gate_inp): one logit per expert.
       Router: HostTensor

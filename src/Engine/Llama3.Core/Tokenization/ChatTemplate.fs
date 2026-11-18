@@ -16,9 +16,9 @@ type PromptPart =
 
 /// Conversation wire formats.
 type ChatFormat =
-    /// Qwen / ChatML: &lt;|im_start|&gt;role\n…&lt;|im_end|&gt;\n
+    /// Qwen / ChatML: &lt;|im_start|&gt;role\n...&lt;|im_end|&gt;\n
     | ChatML
-    /// Llama 3: &lt;|start_header_id|&gt;role&lt;|end_header_id|&gt;\n\n…&lt;|eot_id|&gt;
+    /// Llama 3: &lt;|start_header_id|&gt;role&lt;|end_header_id|&gt;\n\n...&lt;|eot_id|&gt;
     | Llama3Headers
 
 /// Incremental chat formatting: a session renders only the parts it has not fed to the model yet,

@@ -37,7 +37,7 @@ module internal MemoryAdvice =
             try posixMadvise (address, unativeint length, PosixMadvWillNeed) |> ignore
             with :? DllNotFoundException | :? EntryPointNotFoundException -> ()
 
-/// A whole file mapped read-only into the address space — the llama.cpp loading model: tensors
+/// A whole file mapped read-only into the address space, as in llama.cpp's loading model: tensors
 /// are views into the mapping (zero copy, no 2 GiB limit, pages shared with the OS page cache),
 /// and device uploads read straight from it.
 [<Sealed>]
@@ -67,7 +67,7 @@ type MappedFile(path: string) =
     member _.Prefetch(offset: int64, count: int64) =
         if not disposed then MemoryAdvice.willNeed (baseAddress + nativeint offset) (min count (length - offset))
 
-    /// Faults the whole mapping in before inference starts — llama.cpp's MAP_POPULATE default:
+    /// Faults the whole mapping in before inference starts, as llama.cpp's MAP_POPULATE default does:
     /// the file is read into the page cache (in parallel chunks, which keeps NVMe queues busy) and
     /// this process's page tables are filled, so decoding never stalls on page faults. Pages stay
     /// shared with the page cache, so a second process or run pays almost nothing.

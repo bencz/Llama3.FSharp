@@ -43,7 +43,7 @@ type internal KernelSet(accelerator: Accelerator) =
     member val AddScaled =
         lazy (accelerator.LoadAutoGroupedStreamKernel(Action<Index1D, ArrayView<float32>, ArrayView<float32>, float32>(ElementwiseKernels.addScaled)))
 
-/// Host → device weight upload through two page-locked staging buffers. The host side may be a
+/// Host -> device weight upload through two page-locked staging buffers. The host side may be a
 /// memory-mapped file of any size: rows are converted to the device layout chunk by chunk, and
 /// converting chunk i+1 (which also faults its pages in from disk) overlaps the DMA of chunk i.
 [<Sealed>]
@@ -299,7 +299,7 @@ type CudaBackend(accelerator: CudaAccelerator, info: CudaDeviceInfo) =
             bind ()
             let kc = cache c
             require (position >= 0 && position < c.Capacity) (fun () -> $"Attention position %d{position} outside capacity %d{c.Capacity}")
-            require (length scratch >= spec.NumHeads * c.Capacity) (fun () -> "Attention: score buffer smaller than NumHeads × capacity")
+            require (length scratch >= spec.NumHeads * c.Capacity) (fun () -> "Attention: score buffer smaller than NumHeads x capacity")
             require (length q >= spec.NumHeads * spec.HeadDim && length output >= spec.NumHeads * spec.HeadDim) (fun () -> "Attention: q/output buffers too small")
             let args = AttentionArgs(position, c.Capacity, spec.KvDim, spec.HeadDim, spec.KvMul, MathF.Sqrt(float32 spec.HeadDim))
             kernels.Attention.Value.Invoke(

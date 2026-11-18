@@ -42,7 +42,7 @@ let private storiesOptions (name: string) =
     | "gpu" -> { o with ExecutionMode = GpuOnly; UseCpuFallback = false }
     | "hybrid-3-layers" -> { o with ExecutionMode = Hybrid; GpuLayers = Some 3; UseCpuFallback = false }
     | "gpu-kv-host" -> { o with ExecutionMode = GpuOnly; KvCache = HostMemory; UseCpuFallback = false }
-    // 49 MiB: classifier + KV fit, layers do not → all six layers stream through two slots.
+    // 49 MiB: classifier + KV fit, layers do not -> all six layers stream through two slots.
     | "gpu-streamed" -> { o with ExecutionMode = GpuOnly; GpuMemoryLimitMB = Some 49; UseCpuFallback = false }
     | "hybrid-streamed" -> { o with ExecutionMode = Hybrid; Offload = StreamWeights; GpuMemoryLimitMB = Some 52; UseCpuFallback = false }
     | other -> failwith other
@@ -129,7 +129,7 @@ let ``Qwen3 Q8_0: integer CPU path, exact CPU path and GPU agree`` () =
         // Position 0 is excluded from the bound: Qwen3's attention sink drives ~8e3 "massive
         // activations" into a few residual dims there, inflating the per-32 int8 scales right where
         // the last FFN cancels them (measured: 23% max-logit deviation, ranking intact). Later
-        // positions attend to that sink, so they inherit a few percent (measured ≤ 6%).
+        // positions attend to that sink, so they inherit a few percent (measured <= 6%).
         if pos > 0 then
             Assert.True(relativeError quantized.[pos] exact.[pos] < 1e-1f, $"int8 vs exact @%d{pos}: %g{relativeError quantized.[pos] exact.[pos]}")
     Assert.Equal(argmax exact.[0], argmax quantized.[0])
@@ -160,7 +160,7 @@ let ``chat continuation equals replaying the conversation from scratch`` () =
     Assert.Equal<int seq>(a.History, b.History)
 
 // ------------------------------------------------------------------------------------------------
-// Large models (opt-in: LLAMA3_SLOW_TESTS=1 — loads ~19 GB)
+// Large models (opt-in: LLAMA3_SLOW_TESTS=1, loads ~19 GB)
 // ------------------------------------------------------------------------------------------------
 
 [<Fact>]

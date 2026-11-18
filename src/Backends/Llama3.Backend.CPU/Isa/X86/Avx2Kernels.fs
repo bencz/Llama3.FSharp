@@ -9,8 +9,8 @@ open System.Runtime.Intrinsics.X86
 open Llama3.Core
 
 /// x86-64 AVX2 + FMA kernels. Integer dot products follow llama.cpp's scheme:
-///   VPMADDUBSW (u8 × s8 → s16 pairs) → VPMADDWD (× 1 or × scale → s32) → CVTDQ2PS → VFMADD.
-/// Per-block corrections (Q4_K mins, Q6_K −32 offset) are vector dot products of unpacked scales
+///   VPMADDUBSW (u8 x s8 -> s16 pairs) -> VPMADDWD (* 1 or * scale -> s32) -> CVTDQ2PS -> VFMADD.
+/// Per-block corrections (Q4_K mins, Q6_K -32 offset) are vector dot products of unpacked scales
 /// with the pre-scaled activation sums of <see cref="QuantizedActivations"/>.
 /// Every hot method is AggressiveOptimization: SIMD code must not start in the unoptimized tier.
 /// Only instantiate when <c>CpuFeatures.isSupported X86Avx2</c>.
@@ -32,7 +32,7 @@ type Avx2Kernels() =
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     static let half (row: ReadOnlySpan<byte>) (o: int) = Numerics.halfToSingle (uint16 row.[o] ||| (uint16 row.[o + 1] <<< 8))
 
-    /// 32 six-bit values · 32 activation quants, weighted by two int8 scales (one per 16 lanes).
+    /// 32 six-bit values * 32 activation quants, weighted by two int8 scales (one per 16 lanes).
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     static let q6Accumulate (acc: Vector256<float32>) (q: Vector256<byte>) (sa: int16) (sb: int16) (xv: Vector256<sbyte>) (factor: float32) =
         let scaleVec = Vector256.Create(Vector128.Create sa, Vector128.Create sb)
@@ -87,13 +87,13 @@ type Avx2Kernels() =
         for b in 0 .. blocks - 1 do
             let o = b * 34
             let wq = (load row (o + 2)).AsSByte()
-            // Signed × signed via |w| (unsigned) × (x · sign(w)).
+            // Signed * signed via |w| (unsigned) * (x * sign(w)).
             let prod16 = Avx2.MultiplyAddAdjacent(Avx2.Abs wq, Avx2.Sign(loadS xs (b * 32), wq))
             let prod32 = Avx2.MultiplyAddAdjacent(prod16, ones16)
             acc <- Fma.MultiplyAdd(Avx.ConvertToVector256Single prod32, Vector256.Create(half row o * xd.[b]), acc)
         Vector256.Sum acc
 
-    /// Per 32-element sub-block j: d·sc_j·dx_j·Σ(q4·qx) − dmin·m_j·(dx_j·Σqx).
+    /// Per 32-element sub-block j: d*sc_j*dx_j*sum(q4*qx) - dmin*m_j*(dx_j*sum(qx)).
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     static member Q4_K(row: ReadOnlySpan<byte>, superBlocks: int, xq: QuantizedActivations) =
         KernelGuards.check row superBlocks 144 256 xq
@@ -108,7 +108,7 @@ type Avx2Kernels() =
             let dmin = half row (o + 2)
             let struct (scales, minBytes) = Q4KScales.unpack (row.Slice(o + 4, 12))
             let blk0 = sb * 8
-            // Eight mins (zero-extended) · eight pre-scaled activation sums, one FMA.
+            // Eight mins (zero-extended) * eight pre-scaled activation sums, one FMA.
             let m = Avx.ConvertToVector256Single(Avx2.ConvertToVector256Int32(Vector128.CreateScalar(minBytes).AsByte()))
             mins <- Fma.MultiplyAdd(m * Vector256.Create dmin, loadF ss32 blk0, mins)
             for p in 0 .. 3 do
@@ -124,8 +124,8 @@ type Avx2Kernels() =
                 acc <- Fma.MultiplyAdd(Avx.ConvertToVector256Single pHi, Vector256.Create fHi, acc)
         Vector256.Sum acc - Vector256.Sum mins
 
-    /// q6 ∈ [0,63] used unsigned; the −32 bias becomes Σ_g 32·d·sc_g·(dx·Σx)_g, computed as two
-    /// 8-lane FMAs per super-block (scale g ↔ 16-element group g of the super-block).
+    /// q6 in [0,63] used unsigned; the -32 bias becomes sum_g 32*d*sc_g*(dx*sum(x))_g, computed as two
+    /// 8-lane FMAs per super-block (scale g <-> 16-element group g of the super-block).
     /// Byte shifts do not exist in AVX2: 16-bit shifts + masks extract the 2-bit high planes.
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     static member Q6_K(row: ReadOnlySpan<byte>, superBlocks: int, xq: QuantizedActivations) =

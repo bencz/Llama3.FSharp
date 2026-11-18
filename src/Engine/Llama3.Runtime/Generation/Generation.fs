@@ -9,7 +9,7 @@ open Llama3.Core
 open Llama3.Runtime
 
 /// Output stream a token belongs to. Reasoning models wrap their chain of thought in
-/// &lt;think&gt;…&lt;/think&gt;; those tokens are routed to <c>Thinking</c>.
+/// &lt;think&gt;...&lt;/think&gt;; those tokens are routed to <c>Thinking</c>.
 type TokenChannel =
     | Answer
     | Thinking
@@ -44,7 +44,7 @@ type GenerationSettings =
       UseChatTemplate: bool option
       /// Stream the prompt tokens too (llama3.cu prints the prompt before the continuation).
       EchoPrompt: bool
-      /// llama3.cu's "I have a dream" monkey patch (prompt token 306 → 76). Only meaningful for
+      /// llama3.cu's "I have a dream" monkey patch (prompt token 306 -> 76). Only meaningful for
       /// the llama2.c tokenizer; kept to reproduce the reference output bit for bit.
       LegacyPromptPatch: bool }
 

@@ -5,7 +5,7 @@ open ILGPU.Algorithms
 
 /// Normalisation and attention (explicitly grouped kernels with group-wide reductions).
 /// Every kernel is a curried module function: it compiles to a plain static method, which F# 11
-/// binds directly to a delegate (no closure) — the form ILGPU compiles to PTX. The project disables
+/// binds directly to a delegate (no closure): the form ILGPU compiles to PTX. The project disables
 /// F# tail calls, whose IL prefix ILGPU rejects.
 [<RequireQualifiedAccess>]
 module AttentionKernels =
@@ -14,7 +14,7 @@ module AttentionKernels =
     [<Literal>]
     let ReductionGroupSize = 256
 
-    /// Single group: output = weight ⊙ (x · rsqrt(mean(x²) + eps)).
+    /// Single group: output = weight * (x * rsqrt(mean(x^2) + eps)).
     let rmsNorm (output: ArrayView<float32>) (x: ArrayView<float32>) (weight: ArrayView<float32>) (size: int) (eps: float32) =
         let shared = SharedMemory.Allocate<float32>(32)
         let tid = Group.IdxX
@@ -49,7 +49,7 @@ module AttentionKernels =
             i <- i + 32
 
     /// One group per query head (grid = heads): scores into <paramref name="att"/> (row h of a
-    /// heads × capacity scratch), softmax over 0..position, then the value mix. GQA: head h reads
+    /// heads x capacity scratch), softmax over 0..position, then the value mix. GQA: head h reads
     /// KV head h / KvMul.
     let attention (output: ArrayView<float32>) (q: ArrayView<float32>) (keys: ArrayView<float32>) (values: ArrayView<float32>) (att: ArrayView<float32>) (args: AttentionArgs) =
         let shared = SharedMemory.Allocate<float32>(32)

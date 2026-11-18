@@ -33,7 +33,7 @@ let settingsFor (model: Llama3Model) (a: CliArgs) =
 let runChat (model: Llama3Model) (a: CliArgs) (firstMessage: string option) (stdout: TextWriter) =
     use chat = model.CreateChat(?systemPrompt = a.System, enableThinking = a.Think)
     let settings = settingsFor model a
-    eprintfn "Interactive chat — empty line or /exit to quit, /reset to clear the conversation."
+    eprintfn "Interactive chat: empty line or /exit to quit, /reset to clear the conversation."
     let turn (message: string) =
         let printer = TokenPrinter(stdout)
         use cts = new CancellationTokenSource()
@@ -72,7 +72,7 @@ let private run (a: CliArgs) (stdout: TextWriter) =
         let sw = Diagnostics.Stopwatch.StartNew()
         use model = Llama3.load a.Options a.Model
         let c = model.Config
-        eprintfn $"%s{model.Name}: %A{c.Architecture}, %d{c.NumLayers} layers, dim %d{c.Dim}, heads %d{c.NumHeads}/%d{c.NumKvHeads}, vocab %d{c.VocabSize} — loaded in %.1f{sw.Elapsed.TotalSeconds}s"
+        eprintfn $"%s{model.Name}: %A{c.Architecture}, %d{c.NumLayers} layers, dim %d{c.Dim}, heads %d{c.NumHeads}/%d{c.NumKvHeads}, vocab %d{c.VocabSize}, loaded in %.1f{sw.Elapsed.TotalSeconds}s"
         eprintf "%s" (model.Plan.Describe())
         for backend in model.Backends do eprintfn $"  backend: %s{backend}"
         if a.Profile then model.Profile <- Some(ForwardProfile())

@@ -46,7 +46,7 @@ type CpuWeight(tensor: HostTensor, firstRow: int, rowCount: int) =
         member _.SizeInBytes = int64 rowCount * int64 tensor.RowBytes
         member _.Dispose() = ()
 
-/// Contiguous [capacity × kvDim] key and value planes.
+/// Contiguous [capacity x kvDim] key and value planes.
 [<Sealed>]
 type CpuKvCache(capacity: int, kvDim: int) =
     let keys = Array.zeroCreate<float32> (capacity * kvDim)
@@ -169,7 +169,7 @@ type CpuBackend(options: CpuOptions) =
 
     let matVecJob = { new IChunkJob with member _.Execute i = runChunk chunks.[i] }
 
-    /// outputs[i] = weights[i] · inputs[i] over batchInputs/Outputs/Weights[0..n-1].
+    /// outputs[i] = weights[i] * inputs[i] over batchInputs/Outputs/Weights[0..n-1].
     /// Every distinct input (by reference) consumed by an integer kernel is quantized exactly once,
     /// then all rows of all products are scheduled as one balanced job.
     let matVecBatch (n: int) =

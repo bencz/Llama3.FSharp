@@ -90,7 +90,7 @@ module Scheduler =
 
     /// Assigns items (layers in pipeline order) to GPUs from the back: the last GPU takes the
     /// longest suffix that fits, the previous GPU the suffix before it, and so on. Unassigned items
-    /// (−1) form a CPU-resident prefix. For a contiguous pipeline this maximises the number of items
+    /// (-1) form a CPU-resident prefix. For a contiguous pipeline this maximises the number of items
     /// on GPUs. <paramref name="remaining"/> is updated in place.
     let fillBackward (items: int64[]) (remaining: int64[]) : int[] =
         let assignment = Array.create items.Length -1

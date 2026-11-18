@@ -27,7 +27,7 @@ type MemoryEstimate =
 module MemoryManager =
 
     /// VRAM kept free for the CUDA context, kernel images, allocator slack and other processes:
-    /// the explicit setting, else max(256 MiB, 1/64 of the device) — the context and allocator
+    /// the explicit setting, else max(256 MiB, 1/64 of the device), since the context and allocator
     /// overhead grow with the device (more SMs, larger page tables).
     let gpuReserveBytes (total: int64) (reserveMB: int option) =
         match reserveMB with

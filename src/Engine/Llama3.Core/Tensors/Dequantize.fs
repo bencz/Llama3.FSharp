@@ -100,11 +100,11 @@ module Dequantize =
         result
 
 /// Load-time format normalisation. Formats without a native kernel are re-encoded losslessly
-/// where possible (Q4_0 → Q8_0: the values (q − 8)·d are exactly representable with the same d),
+/// where possible (Q4_0 -> Q8_0: the values (q - 8)*d are exactly representable with the same d),
 /// otherwise widened to F32.
 module TensorConversion =
 
-    /// Exact Q4_0 → Q8_0 re-encoding: 18-byte blocks become 34-byte blocks with the same scale.
+    /// Exact Q4_0 -> Q8_0 re-encoding: 18-byte blocks become 34-byte blocks with the same scale.
     let q4_0ToQ8_0 (tensor: HostTensor) : HostTensor =
         let source = tensor.Bytes
         let blocks = source.Length / 18

@@ -5,7 +5,7 @@ namespace Llama3.Core
 type Architecture =
     /// Karpathy llama2.c checkpoint (the format used by the original llama3.cu).
     | Llama2C
-    /// GGUF <c>llama</c> with a byte-level BPE vocabulary: Llama 3.x, SmolLM… (SentencePiece-vocabulary
+    /// GGUF <c>llama</c> with a byte-level BPE vocabulary: Llama 3.x, SmolLM... (SentencePiece-vocabulary
     /// GGUFs such as Llama 2 / TinyLlama are not supported yet).
     | Llama
     /// GGUF <c>qwen2</c>: Q/K/V projections carry biases.
@@ -17,9 +17,9 @@ type Architecture =
 
 /// How rotary embeddings pair the dimensions of a head.
 type RopeMode =
-    /// Adjacent pairs (2i, 2i+1) — GPT-J / Meta layout (ggml ROPE_TYPE_NORM).
+    /// Adjacent pairs (2i, 2i+1): GPT-J / Meta layout (ggml ROPE_TYPE_NORM).
     | Interleaved
-    /// Split halves (i, i + d/2) — GPT-NeoX / HF <c>rotate_half</c> layout.
+    /// Split halves (i, i + d/2): GPT-NeoX / HF <c>rotate_half</c> layout.
     | NeoX
 
 /// Sparse mixture-of-experts hyper-parameters.

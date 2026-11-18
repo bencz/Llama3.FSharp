@@ -40,7 +40,7 @@ let private placements: (string * (bool -> LayerPlan[] * Placement)) list =
       // Streaming applies to dense layers only (the scheduler never streams experts).
       "gpu-streamed", fun moe -> Array.init 3 (fun i -> layer i g0 g0 (if i = 0 || moe then Resident else Streamed) g0), g0
       // Two independent CUDA contexts (two GPUs, or two contexts on one GPU when only one exists):
-      // CPU → GPU0 → GPU1 pipeline, activations crossing every device boundary.
+      // CPU -> GPU0 -> GPU1 pipeline, activations crossing every device boundary.
       "two-gpus-pipeline", fun _ -> [| layer 0 OnCpu OnCpu Resident OnCpu; layer 1 g0 g0 Resident g0; layer 2 g1 g1 Resident g1 |], g1
       // Attention and FFN of one layer on different GPUs, KV on the attention GPU.
       "two-gpus-split-parts", fun _ -> Array.init 3 (fun i -> layer i g0 g1 Resident g0), g1 ]
@@ -89,9 +89,9 @@ let ``every placement matches the float64 reference`` (placement: string, dtype:
     finally
         for g in gpus do g |> Option.iter (fun b -> b.Dispose())
 
-/// Architecture variants × placements that stress them: interleaved RoPE with rope_freqs (Llama
+/// Architecture variants x placements that stress them: interleaved RoPE with rope_freqs (Llama
 /// 3.1), QKV biases with a tied F32 classifier (Qwen2), and 5-layer models whose streamed layers
-/// wrap around the two slots (odd count, ≥ 3 streamed, prefetch across tokens).
+/// wrap around the two slots (odd count, >= 3 streamed, prefetch across tokens).
 let variantCases () =
     let data = TheoryData<string, string>()
     for variant in [ "llama31"; "qwen2-tied"; "five-layers" ] do

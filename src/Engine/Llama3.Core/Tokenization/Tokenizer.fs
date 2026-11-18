@@ -15,7 +15,7 @@ type TokenKind =
     | Unused = 5
     | Byte = 6
 
-/// Text ⇄ token ids.
+/// Text <-> token ids.
 type ITokenizer =
     abstract VocabSize: int
     abstract BosId: int option
@@ -31,7 +31,7 @@ type ITokenizer =
     /// Human-readable token text (diagnostics).
     abstract TokenText: token: int -> string
 
-/// Incremental UTF-8 → string decoding for streamed token pieces.
+/// Incremental UTF-8 -> string decoding for streamed token pieces.
 [<Sealed>]
 type Utf8StreamDecoder() =
     let decoder = UTF8Encoding(false, false).GetDecoder()

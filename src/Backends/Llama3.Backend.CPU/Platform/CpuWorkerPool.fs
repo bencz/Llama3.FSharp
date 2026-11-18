@@ -10,7 +10,7 @@ type IChunkJob =
 
 /// Persistent fork-join pool for the per-token kernels (hundreds of jobs per token, each a few
 /// microseconds to a few milliseconds). Compared with Parallel.For it has no task allocation or
-/// thread-pool wake-up per job: <c>threads − 1</c> dedicated workers plus the calling thread pull
+/// thread-pool wake-up per job: <c>threads - 1</c> dedicated workers plus the calling thread pull
 /// chunk indices from one atomic counter (dynamic load balancing, so a preempted worker delays at
 /// most one chunk). Idle workers spin briefly, then sleep on a monitor until the next job.
 ///
@@ -27,7 +27,7 @@ type CpuWorkerPool(threads: int) =
     let workerCount = max 0 (threads - 1)
     let gate = obj ()
     /// Spin this long for the next job before sleeping (jobs of one token arrive back to back).
-    let spinTicks = Stopwatch.Frequency / 20_000L // 50 µs
+    let spinTicks = Stopwatch.Frequency / 20_000L // 50 us
     let mutable job = ValueNone: IChunkJob voption
     let mutable chunkCount = 0
     let mutable nextChunk = 0
@@ -82,7 +82,7 @@ type CpuWorkerPool(threads: int) =
 
     member _.Threads = workerCount + 1
 
-    /// Runs chunks 0 .. count−1 of <paramref name="work"/> on the pool and the calling thread;
+    /// Runs chunks 0 .. count-1 of <paramref name="work"/> on the pool and the calling thread;
     /// returns when every chunk has finished. The first exception thrown by a chunk is rethrown.
     /// One job at a time: concurrent callers are rejected.
     member _.Run(work: IChunkJob, count: int) =

@@ -5,12 +5,12 @@ open ILGPU
 /// Device-side helpers shared by every kernel: binary16 decoding and warp/group reductions.
 ///
 /// Never convert an unsigned integer straight to float in device code: F# emits <c>conv.r.un</c>,
-/// which goes through float64 — 1/32 throughput on consumer GPUs. Convert via <c>int</c> first.
+/// which goes through float64, at 1/32 throughput on consumer GPUs. Convert via <c>int</c> first.
 /// Helpers are curried module functions (plain static methods) that ILGPU inlines into kernels.
 [<RequireQualifiedAccess>]
 module DeviceMath =
 
-    /// IEEE binary16 bits (low 16 bits of <paramref name="h"/>) → float32 through the hardware
+    /// IEEE binary16 bits (low 16 bits of <paramref name="h"/>) -> float32 through the hardware
     /// converter (cvt.f32.f16: one instruction, exact for every encoding incl. subnormals/inf/NaN).
     let halfToFloat (h: uint32) : float32 =
         let half = Interop.IntAsFloat(uint16 h)

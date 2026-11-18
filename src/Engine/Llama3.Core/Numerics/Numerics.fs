@@ -27,11 +27,11 @@ module Numerics =
         else
             BitConverter.UInt32BitsToSingle(sign ||| ((exponent + 112u) <<< 23) ||| (mantissa <<< 13))
 
-    /// Lookup table covering all 65536 binary16 encodings (256 KiB) — the hot path for F16/K-quant scales.
+    /// Lookup table covering all 65536 binary16 encodings (256 KiB), the hot path for F16/K-quant scales.
     let private halfTable: float32[] =
         Array.init 65536 (fun i -> halfBitsToSingle (uint16 i))
 
-    /// Table-driven binary16 → float32.
+    /// Table-driven binary16 -> float32.
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     let halfToSingle (bits: uint16) : float32 = halfTable.[int bits]
 
@@ -45,7 +45,7 @@ module Numerics =
     let bfloat16ToSingle (bits: uint16) : float32 =
         BitConverter.UInt32BitsToSingle(uint32 bits <<< 16)
 
-    /// Round-to-nearest-even float32 → binary16 (used by tests and by the quantizers).
+    /// Round-to-nearest-even float32 -> binary16 (used by tests and by the quantizers).
     let singleToHalfBits (value: float32) : uint16 = BitConverter.HalfToUInt16Bits(Half.op_Explicit value)
 
     /// Integer ceiling division for non-negative operands.

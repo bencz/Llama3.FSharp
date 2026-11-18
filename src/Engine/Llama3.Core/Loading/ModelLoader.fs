@@ -41,7 +41,7 @@ module ModelValidation =
 
     /// A matrix with <paramref name="rows"/> outputs of <paramref name="cols"/> inputs.
     let matrix (t: HostTensor) (rows: int) (cols: int) =
-        if t.Columns <> cols || t.Rows <> rows then fail t $"%d{rows}×%d{cols} (rows × columns)"
+        if t.Columns <> cols || t.Rows <> rows then fail t $"%d{rows}x%d{cols} (rows x columns)"
 
     let vector (t: HostTensor) (length: int) =
         if t.ElementCount <> int64 length then fail t $"a vector of %d{length}"
@@ -90,7 +90,7 @@ module ModelValidation =
 module ModelLoader =
 
     // ------------------------------------------------------------------------------------------
-    // llama2.c checkpoint (stories15M.bin & co.) — the format consumed by llama3.cu.
+    // llama2.c checkpoint (stories15M.bin & co.), the format consumed by llama3.cu.
     // ------------------------------------------------------------------------------------------
 
     /// Reads a llama2.c checkpoint: 7 int32 header followed by float32 tensors grouped by kind.
@@ -421,7 +421,7 @@ module ModelLoader =
     let private tokenizerFor (path: string) (tokenizerPath: string option) =
         tokenizerPath |> Option.defaultWith (fun () -> Path.Combine(Path.GetDirectoryName(Path.GetFullPath path), "tokenizer.bin"))
 
-    /// Picks the loader from the file content (GGUF magic) — anything else must be a llama2.c
+    /// Picks the loader from the file content (GGUF magic); anything else must be a llama2.c
     /// checkpoint, whose header and size are validated.
     let load (path: string) (tokenizerPath: string option) (options: LoadOptions) : LoadedModel =
         if not (File.Exists path) then raise (FileNotFoundException($"Model file not found: %s{path}", path))

@@ -7,7 +7,7 @@ open ILGPU
 /// read whole 32-bit words of the padded device layouts (see GpuLayout) and stage x in shared memory
 /// when the row fits (the limit comes from the device, see CudaBackend).
 /// Every kernel is a curried module function: it compiles to a plain static method, which F# 11
-/// binds directly to a delegate (no closure) — the form ILGPU compiles to PTX. The project disables
+/// binds directly to a delegate (no closure): the form ILGPU compiles to PTX. The project disables
 /// F# tail calls, whose IL prefix ILGPU rejects.
 [<RequireQualifiedAccess>]
 module MatVecKernels =
@@ -72,7 +72,7 @@ module MatVecKernels =
             j <- j + 32
         s
 
-    /// Q8_0, GPU layout [d:f16][pad][qs:32×i8] = 9 words/block. Lanes 8i..8i+7 cover block b+i
+    /// Q8_0, GPU layout [d:f16][pad][qs:32xi8] = 9 words/block. Lanes 8i..8i+7 cover block b+i
     /// (4 quants per word): 4 blocks per warp step, fully coalesced.
     let dotQ8_0 (w: ArrayView<uint32>) (x: ArrayView<float32>) (row: int) (cols: int) (lane: int) : float32 =
         let blocks = cols / 32
@@ -90,15 +90,15 @@ module MatVecKernels =
             b <- b + 4
         s
 
-    /// Q4_K, GPU layout (148 B = 37 words: [d|dmin][scales×8 u8][mins×8 u8][qs×32 words]).
+    /// Q4_K, GPU layout (148 B = 37 words: [d|dmin][scales x 8 u8][mins x 8 u8][qs x 32 words]).
     /// Lane l reads qs word l: its 8 nibbles belong to sub-blocks 2p and 2p+1 (p = l/8), whose
-    /// pre-unpacked scale and min bytes sit side by side in one word each — no divergent decode.
+    /// pre-unpacked scale and min bytes sit side by side in one word each: no divergent decode.
     let dotQ4_K (w: ArrayView<uint32>) (x: ArrayView<float32>) (row: int) (cols: int) (lane: int) : float32 =
         let superBlocks = cols / 256
         let r = w.SubView(int64 row * int64 (superBlocks * 37), int64 (superBlocks * 37))
         let p = lane >>> 3
         let lp = (lane &&& 7) * 4
-        // Bytes 2p and 2p+1 of the 8-byte scale (and min) array: word 1 + p/2, shift 16·(p&1).
+        // Bytes 2p and 2p+1 of the 8-byte scale (and min) array: word 1 + p/2, shift 16*(p&1).
         let scaleWord = 1 + (p >>> 1)
         let shift = 16 * (p &&& 1)
         let mutable s = 0.0f
@@ -130,8 +130,8 @@ module MatVecKernels =
             s <- s + d * (sc0 * dotLo + sc1 * dotHi) - dmin * (m0 * sumLo + m1 * sumHi)
         s
 
-    /// Q6_K, GPU layout (212 B = 53 words: [ql×32][qh×16][scales×4][d|pad]).
-    /// Lane = 16n + 8g + j: one ql word + one qh word → 8 values (k = g and k = g + 2), 2 scales.
+    /// Q6_K, GPU layout (212 B = 53 words: [ql x 32][qh x 16][scales x 4][d|pad]).
+    /// Lane = 16n + 8g + j: one ql word + one qh word -> 8 values (k = g and k = g + 2), 2 scales.
     let dotQ6_K (w: ArrayView<uint32>) (x: ArrayView<float32>) (row: int) (cols: int) (lane: int) : float32 =
         let superBlocks = cols / 256
         let r = w.SubView(int64 row * int64 (superBlocks * 53), int64 (superBlocks * 53))
@@ -202,7 +202,7 @@ module MatVecKernels =
     // ------------------------------------------------------------------------------------------
     // Row-pair kernels (K-quants): each warp evaluates two rows per step. The activation fragment
     // of a lane (8 floats from shared memory) and, for Q4_K, its sums are loaded once and reused by
-    // both rows — half the shared-memory traffic per element and two independent FMA chains.
+    // both rows: half the shared-memory traffic per element and two independent FMA chains.
     // Inner loops are fully unrolled with constant shifts.
     // ------------------------------------------------------------------------------------------
 

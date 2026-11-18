@@ -22,9 +22,9 @@ type CpuIsa =
 type ICpuKernels =
     abstract Isa: CpuIsa
     abstract Description: string
-    /// Σ a[i]·b[i]
+    /// sum a[i]*b[i]
     abstract DotF32: a: ReadOnlySpan<float32> * b: ReadOnlySpan<float32> -> float32
-    /// y += alpha·x
+    /// y += alpha*x
     abstract Axpy: alpha: float32 * x: ReadOnlySpan<float32> * y: Span<float32> -> unit
     abstract DotQ8_0: row: ReadOnlySpan<byte> * blocks: int * xq: QuantizedActivations -> float32
     abstract DotQ4_K: row: ReadOnlySpan<byte> * superBlocks: int * xq: QuantizedActivations -> float32

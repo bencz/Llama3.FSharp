@@ -32,7 +32,7 @@ type Command =
     | Run of CliArgs
 
 let usage =
-    """llama3 — Llama/Qwen inference runtime in F# (CPU · CUDA · hybrid)
+    """llama3: Llama/Qwen inference runtime in F# (CPU, CUDA, hybrid)
 
 usage: llama3 [prompt] [options]
 
@@ -86,7 +86,7 @@ module private Value =
     let float (name: string) (minimum: float32) (text: string) : Result<float32, string> =
         match Single.TryParse(text, Globalization.NumberStyles.Float, invariant) with
         | true, v when Single.IsFinite v && v >= minimum -> Ok v
-        | true, _ -> Error $"%s{name}: '%s{text}' must be a finite number ≥ %g{minimum}"
+        | true, _ -> Error $"%s{name}: '%s{text}' must be a finite number >= %g{minimum}"
         | _ -> Error $"%s{name}: '%s{text}' is not a number"
 
     let ints (name: string) (text: string) : Result<int list, string> =

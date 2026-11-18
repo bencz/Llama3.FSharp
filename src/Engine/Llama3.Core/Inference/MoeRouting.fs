@@ -8,7 +8,7 @@ module MoeRouting =
     /// Selects the <c>experts.Length</c> highest-scoring experts and their gate weights:
     /// probabilities are the softmax over <b>all</b> router logits; with <paramref name="normalize"/>
     /// the selected probabilities are rescaled to sum to 1 (<c>norm_topk_prob</c>).
-    /// Ties resolve to the lower expert index. Allocation-free; O(n·k) with k ≪ n.
+    /// Ties resolve to the lower expert index. Allocation-free; O(n*k) with k << n.
     let select (logits: ReadOnlySpan<float32>) (normalize: bool) (experts: Span<int>) (weights: Span<float32>) =
         let k = experts.Length
         if k = 0 || k > logits.Length || weights.Length <> k then
@@ -18,7 +18,7 @@ module MoeRouting =
             experts.[i] <- -1
             weights.[i] <- Single.NegativeInfinity
         for e in 0 .. logits.Length - 1 do
-            // NaN logits rank below every number (as −∞); empty slots (−1) below everything.
+            // NaN logits rank below every number (as -inf); empty slots (-1) below everything.
             let l = if Single.IsNaN logits.[e] then Single.NegativeInfinity else logits.[e]
             if experts.[k - 1] < 0 || l > weights.[k - 1] then
                 let mutable j = k - 1

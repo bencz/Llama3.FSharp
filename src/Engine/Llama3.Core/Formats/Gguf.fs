@@ -145,7 +145,7 @@ type GgufFile private (path: string, version: uint32, metadata: IReadOnlyDiction
             if version < 2u || version > 3u then GgufWire.invalid $"Unsupported GGUF version %d{version}"
             let tensorCountRaw = r.ReadUInt64()
             let kvCountRaw = r.ReadUInt64()
-            // A key/value pair needs ≥ 12 bytes (key length + type), a tensor entry ≥ 24.
+            // A key/value pair needs >= 12 bytes (key length + type), a tensor entry >= 24.
             let kvCount = GgufWire.count r kvCountRaw 12L "metadata"
             let metadata = Dictionary<string, GgufValue>(kvCount)
             for _ in 1 .. kvCount do

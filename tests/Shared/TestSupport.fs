@@ -49,7 +49,7 @@ let private writeHalf (bytes: byte[]) (offset: int) (v: float32) =
     bytes.[offset] <- byte h
     bytes.[offset + 1] <- byte (h >>> 8)
 
-/// Random tensor of the given format whose decoded values are well-scaled (|w| ≲ 1).
+/// Random tensor of the given format whose decoded values are well-scaled (|w| <= ~1).
 let randomTensor (rng: Random) (dtype: GgmlType) (rows: int) (cols: int) : HostTensor =
     let bytes = Array.zeroCreate<byte> (int (GgmlTypes.rowBytes dtype (int64 rows * int64 cols)))
     let uniform (lo: float) (hi: float) = float32 (lo + (hi - lo) * rng.NextDouble())
@@ -86,7 +86,7 @@ let randomTensor (rng: Random) (dtype: GgmlType) (rows: int) (cols: int) : HostT
 
 let randomVector (rng: Random) (n: int) = Array.init n (fun _ -> float32 (rng.NextDouble() * 2.0 - 1.0))
 
-/// W·x in float64 over exactly decoded weights.
+/// W*x in float64 over exactly decoded weights.
 let referenceMatVec (w: HostTensor) (x: float32[]) : float32[] =
     let decoded = Dequantize.toSingles w
     Array.init w.Rows (fun r ->
@@ -95,7 +95,7 @@ let referenceMatVec (w: HostTensor) (x: float32[]) : float32[] =
             acc <- acc + float decoded.[r * w.Columns + c] * float x.[c]
         float32 acc)
 
-/// max_i |a_i − b_i| / max(1, max_i |b_i|)
+/// max_i |a_i - b_i| / max(1, max_i |b_i|)
 let relativeError (actual: float32[]) (expected: float32[]) =
     let scale = expected |> Array.fold (fun m v -> max m (abs v)) 1.0f
     Array.fold2 (fun m a e -> max m (abs (a - e))) 0.0f actual expected / scale

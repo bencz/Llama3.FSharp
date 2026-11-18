@@ -10,7 +10,7 @@ type SamplingSettings =
       TopK: int
       /// Nucleus threshold (1 = disabled).
       TopP: float32
-      /// Drop tokens whose probability is below MinP × p(max) (0 = disabled).
+      /// Drop tokens whose probability is below MinP x p(max) (0 = disabled).
       MinP: float32
       /// CTRL-style penalty applied to recently generated tokens (1 = disabled).
       RepetitionPenalty: float32

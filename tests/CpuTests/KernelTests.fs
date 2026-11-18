@@ -75,7 +75,7 @@ let ``integer dot products equal the exact dot of the decoded operands`` (isa: s
     let x = randomVector rng cols
     let xq = QuantizedActivations(cols)
     xq.Quantize(ReadOnlySpan x)
-    // The integer path is exact on (decoded weights) · (dequantized activations).
+    // The integer path is exact on (decoded weights) * (dequantized activations).
     let xDecoded = Array.init cols (fun i -> float32 xq.Quants.[i] * xq.Scales.[i / 32])
     let expected = referenceMatVec w xDecoded
     let scratch = Array.zeroCreate<float32> 256

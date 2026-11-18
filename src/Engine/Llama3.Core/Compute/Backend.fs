@@ -2,7 +2,7 @@ namespace Llama3.Core
 
 open System
 
-/// Family of a compute device. New vendors (ROCm/HIP, OpenCL, Metal…) extend this union and
+/// Family of a compute device. New vendors (ROCm/HIP, OpenCL, Metal...) extend this union and
 /// provide an <see cref="IComputeBackend"/>; the transformer itself never changes.
 type DeviceKind =
     | Cpu
@@ -24,7 +24,7 @@ type IWeight =
     abstract SizeInBytes: int64
 
 /// Keys and values of one layer for every position of a sequence.
-/// Backends may implement any layout (contiguous, paged, reduced precision…) behind this handle.
+/// Backends may implement any layout (contiguous, paged, reduced precision...) behind this handle.
 type IKvCache =
     inherit IDisposable
     abstract Capacity: int
@@ -73,9 +73,9 @@ type IComputeBackend =
     abstract RmsNorm: output: IBuffer * x: IBuffer * weight: IWeight * eps: float32 -> unit
     /// In-place RMSNorm applied independently to each head of x (Qwen3 QK-norm).
     abstract HeadRmsNorm: x: IBuffer * weight: IWeight * numHeads: int * headDim: int * eps: float32 -> unit
-    /// output = W · x (W has Rows outputs of Columns inputs).
+    /// output = W * x (W has Rows outputs of Columns inputs).
     abstract MatVec: output: IBuffer * x: IBuffer * weight: IWeight -> unit
-    /// outputs[i] = weights[i] · inputs[i] for every i, as one job. Inputs may repeat (Q/K/V and
+    /// outputs[i] = weights[i] * inputs[i] for every i, as one job. Inputs may repeat (Q/K/V and
     /// gate/up share theirs): a backend may quantize each distinct input once and schedule all rows
     /// of all products together (MoE experts are many small products with distinct inputs).
     abstract MatVecBatch: inputs: IBuffer[] * outputs: IBuffer[] * weights: IWeight[] -> unit
@@ -83,7 +83,7 @@ type IComputeBackend =
     abstract Add: target: IBuffer * other: IBuffer -> unit
     /// target += bias
     abstract AddBias: target: IBuffer * bias: IWeight -> unit
-    /// target += scale · other
+    /// target += scale * other
     abstract AddScaled: target: IBuffer * other: IBuffer * scale: float32 -> unit
     /// Rotary embedding of q (NumHeads) and k (NumKvHeads) at position pos.
     abstract Rope: q: IBuffer * k: IBuffer * position: int * spec: RopeSpec -> unit

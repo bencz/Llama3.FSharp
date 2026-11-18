@@ -8,10 +8,10 @@ open System.Runtime.Intrinsics
 open System.Runtime.Intrinsics.Arm
 open Llama3.Core
 
-/// ARM64 AdvSimd (NEON) kernels. Every quantized value fits in a signed byte (Q8_0 ∈ [−127,127],
-/// Q4_K nibbles ∈ [0,15], Q6_K ∈ [0,63]), so all formats use one signed int8 dot primitive:
-///   • SDOT (Dp.DotProduct, ARMv8.2 DotProd — Apple M*, Graviton2+, Cortex-A76+) when available,
-///   • otherwise SMULL/SMULL2 + SADALP (widening multiply, pairwise accumulate).
+/// ARM64 AdvSimd (NEON) kernels. Every quantized value fits in a signed byte (Q8_0 in [-127,127],
+/// Q4_K nibbles in [0,15], Q6_K in [0,63]), so all formats use one signed int8 dot primitive:
+///   - SDOT (Dp.DotProduct, ARMv8.2 DotProd: Apple M*, Graviton2+, Cortex-A76+) when available,
+///   - otherwise SMULL/SMULL2 + SADALP (widening multiply, pairwise accumulate).
 /// Only instantiate when <c>CpuFeatures.isSupported ArmNeon</c>.
 [<Sealed>]
 type NeonKernels() =
@@ -27,7 +27,7 @@ type NeonKernels() =
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     static let half (row: ReadOnlySpan<byte>) (o: int) = Numerics.halfToSingle (uint16 row.[o] ||| (uint16 row.[o + 1] <<< 8))
 
-    /// acc[i] += Σ_{k<4} a[4i+k]·b[4i+k]  (16 signed bytes → 4 int32 lanes).
+    /// acc[i] += sum_{k<4} a[4i+k]*b[4i+k]  (16 signed bytes -> 4 int32 lanes).
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     static let dot16 (acc: Vector128<int>) (a: Vector128<sbyte>) (b: Vector128<sbyte>) : Vector128<int> =
         if Dp.IsSupported then Dp.DotProduct(acc, a, b)
@@ -36,7 +36,7 @@ type NeonKernels() =
             let hi = AdvSimd.MultiplyWideningUpper(a, b)
             AdvSimd.AddPairwiseWideningAndAdd(AdvSimd.AddPairwiseWideningAndAdd(acc, lo), hi)
 
-    /// One 16-value Q6_K group (unsigned 6-bit quants) · activations, scaled into the accumulator.
+    /// One 16-value Q6_K group (unsigned 6-bit quants) * activations, scaled into the accumulator.
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     static let q6Step (acc: Vector128<float32>) (q: Vector128<byte>) (x: Vector128<sbyte>) (factor: float32) =
         AdvSimd.FusedMultiplyAdd(acc, AdvSimd.ConvertToSingle(dot16 Vector128<int>.Zero (q.AsSByte()) x), Vector128.Create factor)

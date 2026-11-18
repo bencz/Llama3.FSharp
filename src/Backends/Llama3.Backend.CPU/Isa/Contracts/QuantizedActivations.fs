@@ -6,7 +6,7 @@ open System.Runtime.CompilerServices
 
 /// Activation vector quantized to symmetric int8 blocks of 32 (scale = max|x| / 127), plus the
 /// sum of quants of every 16-element group. The sums let K-quant kernels apply their per-group
-/// offsets (Q4_K mins, Q6_K's −32 bias) with one scalar FMA instead of touching the data again.
+/// offsets (Q4_K mins, Q6_K's -32 bias) with one scalar FMA instead of touching the data again.
 [<Sealed>]
 type QuantizedActivations(capacity: int) =
     let quants = Array.zeroCreate<sbyte> capacity
@@ -19,9 +19,9 @@ type QuantizedActivations(capacity: int) =
     member _.Quants = quants
     member _.Scales = scales
     member _.Sums16 = sums16
-    /// dx_b · Σq over each 32-element block (Q4_K min correction, Q8_0 bias removal).
+    /// dx_b * sum(q) over each 32-element block (Q4_K min correction, Q8_0 bias removal).
     member _.ScaledSums32 = scaledSums32
-    /// dx · Σq over each 16-element group (Q6_K −32 offset correction).
+    /// dx * sum(q) over each 16-element group (Q6_K -32 offset correction).
     member _.ScaledSums16 = scaledSums16
     member _.Length = length
 

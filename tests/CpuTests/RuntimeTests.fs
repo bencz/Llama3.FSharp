@@ -59,7 +59,7 @@ let private estimate =
 let private fakeGpu (index: int) =
     { Kind = Cuda; Index = index; Name = $"Fake GPU %d{index}"; TotalMemory = mib 8192; Architecture = "SM_00" }
 
-/// Free memory such that the budget (free − reserve) is exactly <paramref name="budget"/>.
+/// Free memory such that the budget (free - reserve) is exactly <paramref name="budget"/>.
 let private free (budget: int64) = budget + MemoryManager.gpuReserveBytes (mib 8192) None
 
 let private staging (layers: int[]) = if layers.Length = 0 then 0L else mib 200
@@ -88,7 +88,7 @@ let ``hybrid places everything on a large GPU`` () =
 
 [<Fact>]
 let ``hybrid puts the tail layers and the classifier on a small GPU`` () =
-    // workspace 10 + output 200 + 5 × (100 + 10) = 760 MiB
+    // workspace 10 + output 200 + 5 x (100 + 10) = 760 MiB
     let p = plan ModelOptions.Default (free (mib 760))
     let onGpu = p.Layers |> Array.filter (fun l -> l.Attention = OnGpu 0 && l.Ffn = OnGpu 0) |> Array.map (fun l -> l.Layer)
     Assert.Equal<int[]>([| 5; 6; 7; 8; 9 |], onGpu)
@@ -97,7 +97,7 @@ let ``hybrid puts the tail layers and the classifier on a small GPU`` () =
 
 [<Fact>]
 let ``GpuOnly streams the layers that do not fit`` () =
-    // fixed = 10 + 200 + 10×10 = 310; staging 200; 3 resident layers = 300 → 810 MiB
+    // fixed = 10 + 200 + 10x10 = 310; staging 200; 3 resident layers = 300 -> 810 MiB
     let p = plan { ModelOptions.Default with ExecutionMode = GpuOnly } (free (mib 810))
     Assert.All(p.Layers, fun l -> Assert.Equal((OnGpu 0), l.Attention); Assert.Equal((OnGpu 0), l.Ffn))
     Assert.Equal(3, p.Layers |> Array.filter (fun l -> l.Weights = Resident) |> Array.length)
@@ -105,7 +105,7 @@ let ``GpuOnly streams the layers that do not fit`` () =
 
 [<Fact>]
 let ``MoE keeps all attention on the GPU and places experts of the tail layers`` () =
-    // attention: workspace 10 + output 200 + 10 × (30 + 10 KV) = 610; + 3 expert blocks × 70 = 820 MiB
+    // attention: workspace 10 + output 200 + 10 x (30 + 10 KV) = 610; + 3 expert blocks x 70 = 820 MiB
     let moe = { estimate with IsMoe = true }
     let p =
         match Scheduler.plan ModelOptions.Default moe 1024 [ fakeGpu 0, free (mib 820) ] staging with
@@ -128,8 +128,8 @@ let ``MoE never streams experts, even in GpuOnly`` () =
 
 [<Fact>]
 let ``several GPUs take contiguous segments, the last one holding the tail and the classifier`` () =
-    // Per GPU usable = budget − workspace 10. GPU1: 10 + output 200 + 3 layers × 110 = 540.
-    // GPU0: 10 + 4 layers × 110 = 450. Remaining 3 layers on the CPU.
+    // Per GPU usable = budget - workspace 10. GPU1: 10 + output 200 + 3 layers x 110 = 540.
+    // GPU0: 10 + 4 layers x 110 = 450. Remaining 3 layers on the CPU.
     let p = planWith ModelOptions.Default estimate [ 450; 540 ]
     let placement = p.Layers |> Array.map (fun l -> l.Attention)
     Assert.Equal<Placement[]>([| OnCpu; OnCpu; OnCpu; OnGpu 0; OnGpu 0; OnGpu 0; OnGpu 0; OnGpu 1; OnGpu 1; OnGpu 1 |], placement)
@@ -147,7 +147,7 @@ let ``GpuOnly spreads a model that fits across GPUs without streaming`` () =
 let ``MoE spreads attention over GPUs and keeps experts next to their attention`` () =
     let moe = { estimate with IsMoe = true }
     // Attention units are 40 MiB (30 + 10 KV); expert blocks 70 MiB.
-    // Usable 290/490 MiB, classifier 200 MiB on GPU1 → 290/290: attention splits 5/5 (H1: no
+    // Usable 290/490 MiB, classifier 200 MiB on GPU1 -> 290/290: attention splits 5/5 (H1: no
     // idle GPU), leaving 90 MiB per GPU = one expert block each, next to its attention.
     let p = planWith ModelOptions.Default moe [ 300; 500 ]
     Assert.All(p.Layers, fun l -> Assert.NotEqual(OnCpu, l.Attention); Assert.Equal(l.Attention, l.KvCache))
@@ -160,7 +160,7 @@ let ``MoE spreads attention over GPUs and keeps experts next to their attention`
 [<Fact>]
 let ``MoE experts that do not fit next to their attention use another GPU before the CPU`` () =
     let moe = { estimate with IsMoe = true; FfnWeights = Array.init 10 (fun i -> if i = 9 then mib 150 else mib 70) }
-    // 290/290 after the classifier; attention 200/200 → 90/90 left. Layer 9 (150 MiB) fits nowhere;
+    // 290/290 after the classifier; attention 200/200 -> 90/90 left. Layer 9 (150 MiB) fits nowhere;
     // layer 8 goes to GPU1 (own), layer 4 to GPU0 (own); no GPU has 70 MiB left after that.
     let p = planWith ModelOptions.Default moe [ 300; 500 ]
     Assert.Equal(OnCpu, p.Layers.[9].Ffn)
@@ -170,7 +170,7 @@ let ``MoE experts that do not fit next to their attention use another GPU before
 
 [<Fact>]
 let ``MoE expert crosses to the other GPU when its own is full`` () =
-    // Unequal budgets: GPU0 usable 190 (attention 5×40 does not fit → proportional cut moves on).
+    // Unequal budgets: GPU0 usable 190 (attention 5x40 does not fit -> proportional cut moves on).
     let moe = { estimate with IsMoe = true }
     let p = planWith ModelOptions.Default moe [ 400; 800 ]
     let onGpu = p.Layers |> Array.filter (fun l -> l.Ffn <> OnCpu)
@@ -186,7 +186,7 @@ let ``forced zero GPU layers keeps every layer on the CPU`` () =
 
 [<Fact>]
 let ``forced GPU layers beyond the budget are streamed with StreamWeights`` () =
-    // 300 MiB usable − 200 classifier = 100: one 110 MiB layer does not fit; force 3.
+    // 300 MiB usable - 200 classifier = 100: one 110 MiB layer does not fit; force 3.
     let p = planWith { ModelOptions.Default with GpuLayers = Some 3; Offload = StreamWeights } estimate [ 310 ]
     let gpuLayers = p.Layers |> Array.filter (fun l -> l.Attention <> OnCpu)
     Assert.Equal(3, gpuLayers.Length)

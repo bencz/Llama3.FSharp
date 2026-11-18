@@ -1,6 +1,6 @@
 /// Synthetic models and an independent float64 reference forward pass (linked into test projects).
 /// The reference is written directly from the model definition (pre-norm decoder, GQA, RoPE,
-/// QK-norm, SwiGLU, softmax→top-k→renormalised MoE) and shares no code with the runtime except
+/// QK-norm, SwiGLU, softmax->top-k->renormalised MoE) and shares no code with the runtime except
 /// weight decoding (Dequantize), which has its own exactness tests.
 module Llama3.Tests.ReferenceModel
 
@@ -113,7 +113,7 @@ let forward (model: HostModel) (tokens: int[]) : float[][] =
             let v = Dequantize.toSingles t |> Array.map float
             decoded.[t] <- v
             v
-    /// rows [first, first+count) of W · x
+    /// rows [first, first+count) of W * x
     let matvecRows (w: HostTensor) (first: int) (count: int) (x: float[]) =
         let data = values w
         let cols = w.Columns
@@ -203,7 +203,7 @@ let forward (model: HostModel) (tokens: int[]) : float[][] =
                    let mx = Array.max logits
                    let probs = logits |> Array.map (fun v -> exp (v - mx))
                    let z = Array.sum probs
-                   // top-k by probability, ties → lower index (stable sort on descending value).
+                   // top-k by probability, ties -> lower index (stable sort on descending value).
                    let chosen = probs |> Array.mapi (fun e p -> e, p / z) |> Array.sortBy (fun (e, p) -> -p, e) |> Array.take mc.ExpertsPerToken
                    let total = if mc.NormalizeTopK then chosen |> Array.sumBy snd else 1.0
                    let hiddenRows = mc.ExpertHiddenDim

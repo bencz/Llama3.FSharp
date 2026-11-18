@@ -5,9 +5,9 @@ open Llama3.Core
 
 /// Device storage formats. Q8_0 (34 B) and Q6_K (210 B) blocks are padded to a multiple of
 /// 4 bytes at upload so kernels can read whole 32-bit words; every other format is stored as-is.
-///   Q8_0 → [d:f16][pad:2][qs:32]                       36 B
-///   Q4_K → [d:f16][dmin:f16][scales:8×u8][mins:8×u8][qs:128]   148 B  (6-bit scales unpacked)
-///   Q6_K → [ql:128][qh:64][scales:16][d:f16][pad:2]   212 B
+///   Q8_0 -> [d:f16][pad:2][qs:32]                       36 B
+///   Q4_K -> [d:f16][dmin:f16][scales:8xu8][mins:8xu8][qs:128]   148 B  (6-bit scales unpacked)
+///   Q6_K -> [ql:128][qh:64][scales:16][d:f16][pad:2]   212 B
 module GpuLayout =
 
     let private paddedBlock (t: GgmlType) =

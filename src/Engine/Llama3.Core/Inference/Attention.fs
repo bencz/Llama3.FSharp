@@ -80,7 +80,7 @@ type Workspace(backend: IComputeBackend, config: ModelConfig, cacheCapacity: int
     member _.K = k
     member _.V = v
     member _.AttOut = attOut
-    /// Attention scores, NumHeads × capacity.
+    /// Attention scores, NumHeads x capacity.
     member _.Att = att
     member _.Hb = hb
     member _.Hb2 = hb2

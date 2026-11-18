@@ -49,7 +49,7 @@ module CpuKernels =
             e <- e + n
         acc
 
-    /// bfloat16 · float32: a bf16 is the upper half of a float32, so widening is a 16-bit shift.
+    /// bfloat16 * float32: a bf16 is the upper half of a float32, so widening is a 16-bit shift.
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     let dotBF16 (row: ReadOnlySpan<byte>) (x: ReadOnlySpan<float32>) : float32 =
         let halves = MemoryMarshal.Cast<byte, uint16> row
@@ -91,7 +91,7 @@ module CpuKernels =
     // Element-wise / normalisation / positional kernels
     // ------------------------------------------------------------------------------------------
 
-    /// o = w ⊙ (x / sqrt(mean(x²) + eps)) — same evaluation order as llama3.cu.
+    /// o = w * (x / sqrt(mean(x^2) + eps)), same evaluation order as llama3.cu.
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     let rmsNorm (k: ICpuKernels) (o: Span<float32>) (x: ReadOnlySpan<float32>) (w: ReadOnlySpan<float32>) (eps: float32) =
         let ss = k.DotF32(x, x) / float32 x.Length + eps
@@ -122,7 +122,7 @@ module CpuKernels =
             target.[i] <- target.[i] + other.[i]
             i <- i + 1
 
-    /// gate = silu(gate) · up
+    /// gate = silu(gate) * up
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     let swiGlu (gate: Span<float32>) (up: ReadOnlySpan<float32>) =
         for i in 0 .. gate.Length - 1 do

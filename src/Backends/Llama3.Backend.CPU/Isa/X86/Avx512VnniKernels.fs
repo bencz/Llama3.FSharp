@@ -8,12 +8,12 @@ open System.Runtime.Intrinsics
 open System.Runtime.Intrinsics.X86
 open Llama3.Core
 
-/// x86-64 AVX-512 (F + BW) with VNNI kernels: VPDPBUSD multiplies 64 unsigned×signed byte pairs
+/// x86-64 AVX-512 (F + BW) with VNNI kernels: VPDPBUSD multiplies 64 unsigned x signed byte pairs
 /// and accumulates groups of four into 16 int32 lanes in one instruction (replacing the
 /// VPMADDUBSW + VPMADDWD pair of the AVX2 path, at twice the width).
 ///
-///   Q4_K / Q6_K: quant values are unsigned (0..15, 0..63) → first operand as-is.
-///   Q8_0:        signed weights are biased by XOR 0x80 (w + 128 as u8); the extra 128·Σx is
+///   Q4_K / Q6_K: quant values are unsigned (0..15, 0..63) -> first operand as-is.
+///   Q8_0:        signed weights are biased by XOR 0x80 (w + 128 as u8); the extra 128*sum(x) is
 ///                removed with the per-block activation sums computed at quantization time.
 ///
 /// Available on Ice Lake / Rocket Lake / Sapphire Rapids and newer Intel, and AMD Zen 4 / Zen 5.
@@ -112,8 +112,8 @@ type Avx512VnniKernels() =
                 acc <- Avx512F.FusedMultiplyAdd(Avx512F.ConvertToVector512Single(dpbusd hi xHi), fHi, acc)
         Vector512.Sum acc - Vector256.Sum mins
 
-    /// Per half super-block: ql0‖ql1 is one 64-byte load; the 2-bit planes of qh are merged per
-    /// 256-bit half so that q01 covers elements [0, 64) and q23 [64, 128) of the half — both
+    /// Per half super-block: ql0||ql1 is one 64-byte load; the 2-bit planes of qh are merged per
+    /// 256-bit half so that q01 covers elements [0, 64) and q23 [64, 128) of the half, both
     /// contiguous in the activations. Each group of 4 int32 lanes is one 16-element scale group.
     [<MethodImpl(MethodImplOptions.AggressiveOptimization)>]
     static member Q6_K(row: ReadOnlySpan<byte>, superBlocks: int, xq: QuantizedActivations) =
@@ -126,7 +126,7 @@ type Avx512VnniKernels() =
         for sb in 0 .. superBlocks - 1 do
             let o = sb * 210
             let d = half row (o + 208)
-            // Σ(q − 32)·x = Σq·x − 32·Σx: all 16 scale groups of the super-block in one FMA.
+            // sum((q - 32)*x) = sum(q*x) - 32*sum(x): all 16 scale groups of the super-block in one FMA.
             let allScales = Avx512F.ConvertToVector512Single(Avx512F.ConvertToVector512Int32(Vector128.LoadUnsafe(&MemoryMarshal.GetReference row, unativeint (o + 192)).AsSByte()))
             correction <- Avx512F.FusedMultiplyAdd(allScales * Vector512.Create(32.0f * d), Vector512.LoadUnsafe(&ss16.[sb * 16]), correction)
             for n in 0 .. 1 do
@@ -141,7 +141,7 @@ type Avx512VnniKernels() =
                 let dd = Avx512BW.ShiftRightLogical(h.AsUInt16(), 2uy).AsByte() &&& mask30
                 let q01 = (l &&& mask0F) ||| Vector512.Create(a.GetLower(), b2.GetUpper())
                 let q23 = (Avx512BW.ShiftRightLogical(l.AsUInt16(), 4uy).AsByte() &&& mask0F) ||| Vector512.Create(c.GetLower(), dd.GetUpper())
-                // Eight int8 scales → two vectors of 16 int32 (each scale replicated over 4 lanes).
+                // Eight int8 scales -> two vectors of 16 int32 (each scale replicated over 4 lanes).
                 let scales = Vector128.CreateScalar(BinaryPrimitives.ReadInt64LittleEndian(row.Slice(scOff, 8))).AsByte()
                 let s01 = Avx512F.ConvertToVector512Int32(Ssse3.Shuffle(scales, replicateLow).AsSByte())
                 let s23 = Avx512F.ConvertToVector512Int32(Ssse3.Shuffle(scales, replicateHigh).AsSByte())

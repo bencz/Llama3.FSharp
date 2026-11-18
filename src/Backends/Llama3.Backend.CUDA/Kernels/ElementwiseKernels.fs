@@ -5,7 +5,7 @@ open ILGPU.Algorithms
 
 /// Element-wise kernels (auto-grouped, one thread per element or rotation pair).
 /// Every kernel is a curried module function: it compiles to a plain static method, which F# 11
-/// binds directly to a delegate (no closure) — the form ILGPU compiles to PTX. The project disables
+/// binds directly to a delegate (no closure): the form ILGPU compiles to PTX. The project disables
 /// F# tail calls, whose IL prefix ILGPU rejects.
 [<RequireQualifiedAccess>]
 module ElementwiseKernels =
