@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>CPU backend: ISA-dispatched kernels (x86-64 AVX2 / AVX-512 VNNI, ARM64 NEON/DotProd, portable Vector&lt;T&gt;).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Platform/CpuTopology.fs" />
+    <Compile Include="Platform/CpuWorkerPool.fs" />
+    <Compile Include="Isa/Contracts/QuantizedActivations.fs" />
+    <Compile Include="Isa/Contracts/Q4KScales.fs" />
+    <Compile Include="Isa/Contracts/CpuIsa.fs" />
+    <Compile Include="Isa/Portable/PortableKernels.fs" />
+    <Compile Include="Isa/X86/Avx2Kernels.fs" />
+    <Compile Include="Isa/X86/Avx512VnniKernels.fs" />
+    <Compile Include="Isa/Arm/NeonKernels.fs" />
+    <Compile Include="Kernels/CpuKernels.fs" />
+    <Compile Include="Kernels/Autotune.fs" />
+    <Compile Include="CpuOperations.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Llama3.Core\Llama3.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

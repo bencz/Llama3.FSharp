@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Test method names are sentences; xUnit discovers them reflectively. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/TestSupport.fs" Link="TestSupport.fs" />
+    <Compile Include="../Shared/ReferenceModel.fs" Link="ReferenceModel.fs" />
+    <Compile Include="CudaKernelTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Engine/Llama3.Runtime/Llama3.Runtime.fsproj" />
+  </ItemGroup>
+
+</Project>

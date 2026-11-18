@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Execution runtime: device discovery, memory planning, scheduling and the public Llama3 API.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Configuration/Options.fs" />
+    <Compile Include="Devices/DeviceManager.fs" />
+    <Compile Include="Planning/MemoryManager.fs" />
+    <Compile Include="Planning/Scheduler.fs" />
+    <Compile Include="Execution/ExecutionEngine.fs" />
+    <Compile Include="Generation/Generation.fs" />
+    <Compile Include="Llama3.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Llama3.Core\Llama3.Core.fsproj" />
+    <ProjectReference Include="..\..\Backends\Llama3.Backend.CPU\Llama3.Backend.CPU.fsproj" />
+    <ProjectReference Include="..\..\Backends\Llama3.Backend.CUDA\Llama3.Backend.CUDA.fsproj" />
+  </ItemGroup>
+
+</Project>

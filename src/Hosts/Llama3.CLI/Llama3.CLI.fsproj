@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>llama3</AssemblyName>
+    <Description>Command-line front end.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Cli/Arguments.fs" />
+    <Compile Include="Cli/Output.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Llama3.Runtime\Llama3.Runtime.fsproj" />
+  </ItemGroup>
+
+</Project>

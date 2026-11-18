@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>CUDA backend: ILGPU kernels JIT-compiled to PTX (needs only the NVIDIA driver).</Description>
+    <!-- ILGPU cannot compile the IL `tail.` prefix emitted by F# for calls in tail position. -->
+    <Tailcalls>false</Tailcalls>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Kernels/KernelArgs.fs" />
+    <Compile Include="Kernels/DeviceMath.fs" />
+    <Compile Include="Kernels/MatVecKernels.fs" />
+    <Compile Include="Kernels/AttentionKernels.fs" />
+    <Compile Include="Kernels/ElementwiseKernels.fs" />
+    <Compile Include="Memory/GpuLayout.fs" />
+    <Compile Include="Memory/CudaMemory.fs" />
+    <Compile Include="Memory/WeightStreaming.fs" />
+    <Compile Include="CudaOperations.fs" />
+    <Compile Include="CudaPlatform.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILGPU" />
+    <PackageReference Include="ILGPU.Algorithms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Llama3.Core\Llama3.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Engine/">
+    <Project Path="src/Engine/Llama3.Core/Llama3.Core.fsproj" />
+    <Project Path="src/Engine/Llama3.Runtime/Llama3.Runtime.fsproj" />
+  </Folder>
+  <Folder Name="/src/Backends/">
+    <Project Path="src/Backends/Llama3.Backend.CPU/Llama3.Backend.CPU.fsproj" />
+    <Project Path="src/Backends/Llama3.Backend.CUDA/Llama3.Backend.CUDA.fsproj" />
+  </Folder>
+  <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/Llama3.CLI/Llama3.CLI.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CpuTests/Llama3.CpuTests.fsproj" />
+    <Project Path="tests/CudaTests/Llama3.CudaTests.fsproj" />
+    <Project Path="tests/NumericalParityTests/Llama3.NumericalParityTests.fsproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <File Path="tools/test-arm64.sh" />
+    <File Path="tools/reference/qwen3_reference.py" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

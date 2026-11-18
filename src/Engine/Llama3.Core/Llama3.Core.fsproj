@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Model formats, tokenizers, sampling and the device-agnostic transformer.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Numerics/Numerics.fs" />
+    <Compile Include="Tensors/GgmlType.fs" />
+    <Compile Include="Storage/MappedFile.fs" />
+    <Compile Include="Tensors/HostTensor.fs" />
+    <Compile Include="Tensors/Dequantize.fs" />
+    <Compile Include="Model/ModelConfig.fs" />
+    <Compile Include="Model/HostModel.fs" />
+    <Compile Include="Formats/Gguf.fs" />
+    <Compile Include="Tokenization/Tokenizer.fs" />
+    <Compile Include="Tokenization/SentencePieceTokenizer.fs" />
+    <Compile Include="Tokenization/BpeTokenizer.fs" />
+    <Compile Include="Tokenization/ChatTemplate.fs" />
+    <Compile Include="Loading/ModelLoader.fs" />
+    <Compile Include="Sampling/Sampler.fs" />
+    <Compile Include="Compute/Backend.fs" />
+    <Compile Include="Inference/MoeRouting.fs" />
+    <Compile Include="Inference/Attention.fs" />
+    <Compile Include="Inference/Transformer.fs" />
+  </ItemGroup>
+
+</Project>

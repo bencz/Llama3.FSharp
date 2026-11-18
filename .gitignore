@@ -1,0 +1,29 @@
+# Build output
+bin/
+obj/
+artifacts/
+*.nupkg
+
+# Test results and coverage
+TestResults/
+*.trx
+coverage*/
+
+# IDE state (Rider / Visual Studio / VS Code)
+.idea/.idea.*/.idea/workspace.xml
+.idea/.idea.*/.idea/tasks.xml
+.idea/.idea.*/.idea/usage.statistics.xml
+.idea/.idea.*/.idea/shelf/
+.vs/
+.vscode/
+*.user
+*.suo
+*.DotSettings.user
+
+# Models (GGUF files live in ~/models or $LLAMA3_MODELS_DIR; only the tiny llama2.c golden model is versioned)
+*.gguf
+
+# OS and editor leftovers
+.DS_Store
+*.swp
+*~
