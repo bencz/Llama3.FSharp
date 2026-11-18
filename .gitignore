@@ -10,10 +10,7 @@ TestResults/
 coverage*/
 
 # IDE state (Rider / Visual Studio / VS Code)
-.idea/.idea.*/.idea/workspace.xml
-.idea/.idea.*/.idea/tasks.xml
-.idea/.idea.*/.idea/usage.statistics.xml
-.idea/.idea.*/.idea/shelf/
+.idea/
 .vs/
 .vscode/
 *.user
